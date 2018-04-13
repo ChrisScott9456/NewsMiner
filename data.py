@@ -104,9 +104,10 @@ tsne_tfidf
 
 import bokeh.plotting as bp
 from bokeh.models import HoverTool, BoxSelectTool
-from bokeh.plotting import figure, show, output_notebook
+from bokeh.plotting import figure, show, output_file
+from matplotlib import pyplot as plt
 
-output_notebook()
+output_file("Test")
 plot_tfidf = bp.figure(plot_width=700, plot_height=600, title="tf-idf clustering of the news",
     tools="pan,wheel_zoom,box_zoom,reset,hover,previewsave",
     x_axis_type=None, y_axis_type=None, min_border=1)
@@ -119,3 +120,61 @@ plot_tfidf.scatter(x='x', y='y', source=tfidf_df)
 hover = plot_tfidf.select(dict(type=HoverTool))
 hover.tooltips={"description": "@description", "category":"@category"}
 show(plot_tfidf)
+
+vz.shape
+
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+from sklearn.cluster import MiniBatchKMeans
+
+num_clusters = 30
+kmeans_model = MiniBatchKMeans(n_clusters=num_clusters, init='k-means++', n_init=1, 
+                         init_size=1000, batch_size=1000, verbose=False, max_iter=1000)
+kmeans = kmeans_model.fit(vz)
+kmeans_clusters = kmeans.predict(vz)
+kmeans_distances = kmeans.transform(vz)
+
+for (i, desc),category in zip(enumerate(data.description),data['category']):
+    if(i < 5):
+        print("Cluster " + str(kmeans_clusters[i]) + ": " + desc + 
+              "(distance: " + str(kmeans_distances[i][kmeans_clusters[i]]) + ")")
+        print('category: ',category)
+        print('---')
+
+sorted_centroids = kmeans.cluster_centers_.argsort()[:, ::-1]
+terms = vectorizer.get_feature_names()
+for i in range(num_clusters):
+    print("Cluster %d:" % i)
+    aux = ''
+    for j in sorted_centroids[i, :10]:
+        aux += terms[j] + ' | '
+    print(aux)
+    print() 
+
+tsne_kmeans = tsne_model.fit_transform(kmeans_distances)
+
+import numpy as np
+
+colormap = np.array(["#6d8dca", "#69de53", "#723bca", "#c3e14c", "#c84dc9", "#68af4e", "#6e6cd5",
+"#e3be38", "#4e2d7c", "#5fdfa8", "#d34690", "#3f6d31", "#d44427", "#7fcdd8", "#cb4053", "#5e9981",
+"#803a62", "#9b9e39", "#c88cca", "#e1c37b", "#34223b", "#bdd8a3", "#6e3326", "#cfbdce", "#d07d3c",
+"#52697d", "#7d6d33", "#d27c88", "#36422b", "#b68f79"])
+
+plot_kmeans = bp.figure(plot_width=700, plot_height=600, title="KMeans clustering of the news",
+    tools="pan,wheel_zoom,box_zoom,reset,hover,previewsave",
+    x_axis_type=None, y_axis_type=None, min_border=1)
+
+kmeans_df = pd.DataFrame(tsne_kmeans, columns=['x', 'y'])
+kmeans_df['cluster'] = kmeans_clusters
+kmeans_df['description'] = data['description']
+kmeans_df['category'] = data['category']
+kmeans_df['colors'] = colormap[kmeans_clusters]
+
+plot_kmeans.scatter(x='x', y='y', 
+                    color='colors', 
+                    source=kmeans_df)
+hover = plot_kmeans.select(dict(type=HoverTool))
+hover.tooltips={"description": "@description", "category": "@category", "cluster":"@cluster"}
+show(plot_kmeans)
