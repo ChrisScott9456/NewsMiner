@@ -129,7 +129,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from sklearn.cluster import MiniBatchKMeans
 
-num_clusters = 30
+num_clusters = 20
 kmeans_model = MiniBatchKMeans(n_clusters=num_clusters, init='k-means++', n_init=1, 
                          init_size=1000, batch_size=1000, verbose=False, max_iter=1000)
 kmeans = kmeans_model.fit(vz)
