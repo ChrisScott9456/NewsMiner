@@ -107,7 +107,8 @@ from bokeh.models import HoverTool, BoxSelectTool
 from bokeh.plotting import figure, show, output_file
 from matplotlib import pyplot as plt
 
-output_file("Test")
+output_file("output.html")
+'''
 plot_tfidf = bp.figure(plot_width=700, plot_height=600, title="tf-idf clustering of the news",
     tools="pan,wheel_zoom,box_zoom,reset,hover,previewsave",
     x_axis_type=None, y_axis_type=None, min_border=1)
@@ -122,14 +123,14 @@ hover.tooltips={"description": "@description", "category":"@category"}
 show(plot_tfidf)
 
 vz.shape
-
+'''
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from sklearn.cluster import MiniBatchKMeans
 
-num_clusters = 20
+num_clusters = 30
 kmeans_model = MiniBatchKMeans(n_clusters=num_clusters, init='k-means++', n_init=1, 
                          init_size=1000, batch_size=1000, verbose=False, max_iter=1000)
 kmeans = kmeans_model.fit(vz)
